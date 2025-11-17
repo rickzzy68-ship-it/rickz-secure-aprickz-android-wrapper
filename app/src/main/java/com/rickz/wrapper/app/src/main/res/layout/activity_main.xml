@@ -2,24 +2,45 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:padding="24dp"
-    android:orientation="vertical">
+    android:gravity="center"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter Activation Code"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:paddingBottom="24dp" />
 
     <EditText
-        android:id="@+id/inputCode"
+        android:id="@+id/etCode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Activation Code"
+        android:hint="Activation Code"
         android:inputType="text"
         android:padding="12dp"
-        android:textSize="18sp"/>
+        android:background="@android:drawable/edit_text"
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/btnActivate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Activate"
-        android:padding="12dp"
-        android:textSize="18sp"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="20dp"
+        android:padding="12dp" />
+
+    <TextView
+        android:id="@+id/tvError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FF0000"
+        android:paddingTop="16dp"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
 </LinearLayout>
