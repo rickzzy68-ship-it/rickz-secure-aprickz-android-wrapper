@@ -1,71 +1,44 @@
 package com.rickz.wrapper
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.webkit.WebView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import java.io.File
-import java.io.FileOutputStream
-import java.security.MessageDigest
 
 class MainActivity : AppCompatActivity() {
 
-    private val salt = "EartNoun25"   // YOUR SALT
+    private lateinit var excelWrapper: ExcelWrapper
 
+    @SuppressLint("HardwareIds")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        excelWrapper = ExcelWrapper(this)
+
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+        val computedHash = excelWrapper.computeDeviceHash(deviceId)
+
         val inputCode = findViewById<EditText>(R.id.inputCode)
-        val btnActivate = findViewById<Button>(R.id.btnActivate)
+        val activateBtn = findViewById<Button>(R.id.activateBtn)
+        val webView = findViewById<WebView>(R.id.webView)
 
-        btnActivate.setOnClickListener {
-            val userCode = inputCode.text.toString().trim()
-            if (userCode.isEmpty()) {
-                Toast.makeText(this, "Enter activation code.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+        activateBtn.setOnClickListener {
+            val entered = inputCode.text.toString().trim()
 
-            val deviceId = getDeviceId()
-            val correctCode = sha256(deviceId + salt)
+            if (entered == computedHash) {
+                Toast.makeText(this, "Activation Successful!", Toast.LENGTH_LONG).show()
 
-            if (correctCode.equals(userCode, ignoreCase = true)) {
-                Toast.makeText(this, "Activation successful!", Toast.LENGTH_SHORT).show()
-                openExcelFile()
+                val file = excelWrapper.copyExcelFile()
+                excelWrapper.openInWebView(webView, file)
+
             } else {
-                Toast.makeText(this, "Invalid code.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Invalid Code. This device is not registered.", Toast.LENGTH_LONG).show()
             }
         }
-    }
-
-    @SuppressLint("HardwareIds")
-    private fun getDeviceId(): String {
-        return Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-    }
-
-    private fun sha256(input: String): String {
-        val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }
-    }
-
-    private fun openExcelFile() {
-        val inputStream = assets.open("worksheet.xlsx")
-        val outFile = File(cacheDir, "worksheet.xlsx")
-        val outputStream = FileOutputStream(outFile)
-
-        inputStream.copyTo(outputStream)
-        inputStream.close()
-        outputStream.close()
-
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.setDataAndType(Uri.fromFile(outFile), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-        startActivity(intent)
     }
 }
